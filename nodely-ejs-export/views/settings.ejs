@@ -1,0 +1,117 @@
+<%- include('partials/header') %>
+
+<section class="settings-section">
+  <div class="container">
+    <div class="settings-header">
+      <a href="/dashboard" class="back-link">
+        <i data-lucide="arrow-left"></i>
+        Back to Dashboard
+      </a>
+      <h1>Settings</h1>
+    </div>
+    
+    <div class="settings-grid">
+      <!-- Profile Section -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <i data-lucide="user"></i>
+          <h2>Profile</h2>
+        </div>
+        
+        <form id="profileForm" class="settings-form">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" value="<%= user.email %>" disabled>
+            <span class="form-hint">Email cannot be changed</span>
+          </div>
+          
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" value="<%= profile?.full_name || '' %>" placeholder="John Doe">
+          </div>
+          
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="save" class="btn-icon"></i>
+            Save Changes
+          </button>
+        </form>
+      </div>
+      
+      <!-- Appearance Section -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <i data-lucide="palette"></i>
+          <h2>Appearance</h2>
+        </div>
+        
+        <div class="theme-options">
+          <label class="theme-option">
+            <input type="radio" name="theme" value="light" onclick="setTheme('light')">
+            <div class="theme-preview light">
+              <i data-lucide="sun"></i>
+              <span>Light</span>
+            </div>
+          </label>
+          
+          <label class="theme-option">
+            <input type="radio" name="theme" value="dark" checked onclick="setTheme('dark')">
+            <div class="theme-preview dark">
+              <i data-lucide="moon"></i>
+              <span>Dark</span>
+            </div>
+          </label>
+          
+          <label class="theme-option">
+            <input type="radio" name="theme" value="system" onclick="setTheme('system')">
+            <div class="theme-preview system">
+              <i data-lucide="monitor"></i>
+              <span>System</span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const fullName = document.getElementById('fullName').value;
+    
+    try {
+      const res = await fetch('/api/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: fullName })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        alert('Profile updated successfully!');
+      } else {
+        alert(data.error || 'Failed to update profile');
+      }
+    } catch (err) {
+      alert('Failed to update profile');
+    }
+  });
+  
+  function setTheme(theme) {
+    if (theme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    localStorage.setItem('theme', theme);
+  }
+  
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.querySelector(`input[value="${savedTheme}"]`)?.click();
+</script>
+
+<%- include('partials/footer') %>

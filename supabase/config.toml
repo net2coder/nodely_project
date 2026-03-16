@@ -1,0 +1,16 @@
+project_id = "rrycgonvlguqnkalupnp"
+
+[functions.register-device]
+verify_jwt = false
+
+[functions.claim-device]
+verify_jwt = false
+
+[functions.get-command]
+verify_jwt = false
+
+[functions.update-state]
+verify_jwt = false
+
+[functions.get-firmware]
+verify_jwt = false

@@ -1,0 +1,94 @@
+<%- include('partials/header') %>
+
+<section class="claim-section">
+  <div class="container">
+    <div class="claim-card">
+      <div class="claim-header">
+        <div class="claim-icon">
+          <i data-lucide="cpu"></i>
+        </div>
+        <h1>Claim Device</h1>
+        <p>Link this device to your account</p>
+      </div>
+      
+      <% if (error) { %>
+        <div class="alert alert-error">
+          <i data-lucide="alert-circle"></i>
+          <%= error %>
+        </div>
+      <% } else if (device && device.claimed) { %>
+        <div class="alert alert-warning">
+          <i data-lucide="alert-triangle"></i>
+          This device has already been claimed
+        </div>
+        <a href="/dashboard" class="btn btn-primary btn-block">Go to Dashboard</a>
+      <% } else { %>
+        <div class="device-preview">
+          <div class="preview-row">
+            <span class="preview-label">Device UUID</span>
+            <span class="preview-value"><%= deviceUuid %></span>
+          </div>
+          <% if (device) { %>
+            <div class="preview-row">
+              <span class="preview-label">Hardware ID</span>
+              <span class="preview-value"><%= device.hardware_id %></span>
+            </div>
+            <div class="preview-row">
+              <span class="preview-label">Firmware</span>
+              <span class="preview-value">v<%= device.firmware_version || '1.0.0' %></span>
+            </div>
+          <% } %>
+        </div>
+        
+        <form id="claimForm" class="claim-form">
+          <div class="form-group">
+            <label for="deviceName">Device Name (optional)</label>
+            <input type="text" id="deviceName" placeholder="My Smart Device">
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-block">
+            <i data-lucide="check" class="btn-icon"></i>
+            Claim Device
+          </button>
+        </form>
+      <% } %>
+      
+      <a href="/dashboard" class="back-link">
+        <i data-lucide="arrow-left"></i>
+        Back to Dashboard
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('claimForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const deviceName = document.getElementById('deviceName').value;
+    
+    try {
+      const res = await fetch('/dashboard/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          device_uuid: '<%= deviceUuid %>',
+          device_name: deviceName
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        alert('Device claimed successfully!');
+        window.location.href = '/dashboard';
+      } else {
+        alert(data.error || 'Failed to claim device');
+      }
+    } catch (err) {
+      alert('Failed to claim device');
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,239 @@
+<%- include('partials/header') %>
+
+<section class="dashboard-section">
+  <div class="container">
+    <div class="dashboard-header">
+      <div>
+        <h1>Welcome back!</h1>
+        <p class="text-muted">Manage and monitor your connected devices</p>
+      </div>
+      <a href="/claim/manual" class="btn btn-primary">
+        <i data-lucide="plus" class="btn-icon"></i>
+        Add Device
+      </a>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i data-lucide="cpu"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value"><%= totalCount %></span>
+          <span class="stat-label">Total Devices</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon online">
+          <i data-lucide="wifi"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value"><%= onlineCount %></span>
+          <span class="stat-label">Online</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon offline">
+          <i data-lucide="wifi-off"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value"><%= totalCount - onlineCount %></span>
+          <span class="stat-label">Offline</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Search -->
+    <div class="search-bar">
+      <i data-lucide="search"></i>
+      <input type="text" id="searchInput" placeholder="Search devices..." oninput="filterDevices()">
+    </div>
+    
+    <!-- Devices Grid -->
+    <% if (devices.length === 0) { %>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i data-lucide="cpu"></i>
+        </div>
+        <h3>No devices yet</h3>
+        <p>Claim your first device to get started</p>
+        <a href="/claim/manual" class="btn btn-primary">
+          <i data-lucide="plus" class="btn-icon"></i>
+          Add Device
+        </a>
+      </div>
+    <% } else { %>
+      <div class="devices-grid" id="devicesGrid">
+        <% devices.forEach(device => { %>
+          <% 
+            const lastSeen = device.last_seen ? new Date(device.last_seen) : null;
+            const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 60000;
+          %>
+          <div class="device-card" data-name="<%= device.device_name || device.device_uuid %>">
+            <div class="device-header">
+              <div class="device-status <%= isOnline ? 'online' : 'offline' %>">
+                <span class="status-dot"></span>
+                <%= isOnline ? 'Online' : 'Offline' %>
+              </div>
+              <div class="device-actions">
+                <button class="btn btn-icon" onclick="openRenameModal('<%= device.id %>', '<%= device.device_name || '' %>')">
+                  <i data-lucide="edit-2"></i>
+                </button>
+                <button class="btn btn-icon danger" onclick="deleteDevice('<%= device.id %>')">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </div>
+            </div>
+            
+            <h3 class="device-name"><%= device.device_name || `Device ${device.device_uuid.slice(0, 8)}` %></h3>
+            
+            <div class="device-info">
+              <div class="info-row">
+                <span class="info-label">UUID</span>
+                <span class="info-value"><%= device.device_uuid.slice(0, 12) %>...</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Firmware</span>
+                <span class="info-value">v<%= device.firmware_version || '1.0.0' %></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Last Seen</span>
+                <span class="info-value">
+                  <%= lastSeen ? lastSeen.toLocaleString() : 'Never' %>
+                </span>
+              </div>
+            </div>
+            
+            <div class="device-control">
+              <span class="control-label">
+                <i data-lucide="power"></i>
+                Relay
+              </span>
+              <label class="switch">
+                <input 
+                  type="checkbox" 
+                  <%= device.relay_state ? 'checked' : '' %>
+                  <%= device.locked ? 'disabled' : '' %>
+                  onchange="toggleRelay('<%= device.id %>', this.checked)"
+                >
+                <span class="slider"></span>
+              </label>
+            </div>
+            
+            <% if (device.locked) { %>
+              <div class="device-locked">
+                <i data-lucide="lock"></i>
+                Device Locked
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<!-- Rename Modal -->
+<div class="modal" id="renameModal">
+  <div class="modal-backdrop" onclick="closeRenameModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Rename Device</h3>
+      <button class="btn btn-icon" onclick="closeRenameModal()">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="renameDeviceId">
+      <div class="form-group">
+        <label for="newDeviceName">Device Name</label>
+        <input type="text" id="newDeviceName" placeholder="My Device">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeRenameModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="renameDevice()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterDevices() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.device-card').forEach(card => {
+      const name = card.dataset.name.toLowerCase();
+      card.style.display = name.includes(query) ? '' : 'none';
+    });
+  }
+  
+  async function toggleRelay(id, state) {
+    try {
+      const res = await fetch(`/dashboard/toggle-relay/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.error || 'Failed to toggle relay');
+        location.reload();
+      }
+    } catch (err) {
+      alert('Failed to toggle relay');
+      location.reload();
+    }
+  }
+  
+  function openRenameModal(id, name) {
+    document.getElementById('renameDeviceId').value = id;
+    document.getElementById('newDeviceName').value = name;
+    document.getElementById('renameModal').classList.add('open');
+    lucide.createIcons();
+  }
+  
+  function closeRenameModal() {
+    document.getElementById('renameModal').classList.remove('open');
+  }
+  
+  async function renameDevice() {
+    const id = document.getElementById('renameDeviceId').value;
+    const name = document.getElementById('newDeviceName').value;
+    
+    try {
+      const res = await fetch(`/dashboard/rename/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+      if (data.success) {
+        location.reload();
+      } else {
+        alert(data.error || 'Failed to rename device');
+      }
+    } catch (err) {
+      alert('Failed to rename device');
+    }
+  }
+  
+  async function deleteDevice(id) {
+    if (!confirm('Are you sure you want to remove this device?')) return;
+    
+    try {
+      const res = await fetch(`/dashboard/delete/${id}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.success) {
+        location.reload();
+      } else {
+        alert(data.error || 'Failed to delete device');
+      }
+    } catch (err) {
+      alert('Failed to delete device');
+    }
+  }
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | Nodely</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container navbar-content">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i data-lucide="cpu"></i>
+        </div>
+        <span class="logo-text">NODELY</span>
+      </a>
+      
+      <div class="nav-links">
+        <a href="/#features">Features</a>
+        <a href="/#how-it-works">How It Works</a>
+        <% if (user) { %>
+          <a href="/dashboard">Dashboard</a>
+          <% if (isAdmin) { %>
+            <a href="/admin">Admin</a>
+          <% } %>
+        <% } %>
+      </div>
+      
+      <div class="nav-actions">
+        <% if (user) { %>
+          <a href="/settings" class="btn btn-ghost">
+            <i data-lucide="settings" class="btn-icon"></i>
+            Settings
+          </a>
+          <a href="/auth/logout" class="btn btn-outline">Sign Out</a>
+        <% } else { %>
+          <a href="/auth?mode=login" class="btn btn-ghost">Sign In</a>
+          <a href="/auth?mode=signup" class="btn btn-primary">Get Started</a>
+        <% } %>
+      </div>
+      
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+    
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="/#features">Features</a>
+      <a href="/#how-it-works">How It Works</a>
+      <% if (user) { %>
+        <a href="/dashboard">Dashboard</a>
+        <% if (isAdmin) { %>
+          <a href="/admin">Admin</a>
+        <% } %>
+        <a href="/settings">Settings</a>
+        <a href="/auth/logout">Sign Out</a>
+      <% } else { %>
+        <a href="/auth?mode=login">Sign In</a>
+        <a href="/auth?mode=signup">Get Started</a>
+      <% } %>
+    </div>
+  </nav>
+  
+  <main>

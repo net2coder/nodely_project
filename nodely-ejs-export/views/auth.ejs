@@ -1,0 +1,248 @@
+<%- include('partials/header') %>
+
+<section class="auth-section">
+  <div class="auth-bg">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+  </div>
+  
+  <div class="auth-container">
+    <a href="/" class="back-link">
+      <i data-lucide="arrow-left"></i>
+      Back to home
+    </a>
+    
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-icon lg">
+          <i data-lucide="cpu"></i>
+        </div>
+        <h1 class="logo-text">NODELY</h1>
+      </div>
+      
+      <h2 class="auth-title">
+        <% if (mode === 'signup') { %>
+          Create your account
+        <% } else if (mode === 'forgot') { %>
+          Reset your password
+        <% } else { %>
+          Welcome back
+        <% } %>
+      </h2>
+      <p class="auth-subtitle">
+        <% if (mode === 'signup') { %>
+          Start managing your IoT devices
+        <% } else if (mode === 'forgot') { %>
+          We'll send you a reset link
+        <% } else { %>
+          Sign in to your dashboard
+        <% } %>
+      </p>
+      
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error">
+          <i data-lucide="alert-circle"></i>
+          <%= error %>
+        </div>
+      <% } %>
+      
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success">
+          <i data-lucide="check-circle"></i>
+          <%= success %>
+        </div>
+      <% } %>
+      
+      <!-- Login Method Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-method="email" onclick="switchMethod('email')">
+          <i data-lucide="mail"></i>
+          Email
+        </button>
+        <button class="auth-tab" data-method="phone" onclick="switchMethod('phone')">
+          <i data-lucide="phone"></i>
+          Phone
+        </button>
+      </div>
+      
+      <!-- Email Form -->
+      <form id="emailForm" action="/auth/<%= mode === 'signup' ? 'signup' : 'login' %>" method="POST" class="auth-form">
+        <% if (mode === 'signup') { %>
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <div class="input-wrapper">
+              <i data-lucide="user"></i>
+              <input type="text" id="fullName" name="fullName" placeholder="John Doe" required>
+            </div>
+          </div>
+        <% } %>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <div class="input-wrapper">
+            <i data-lucide="mail"></i>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required>
+          </div>
+        </div>
+        
+        <% if (mode !== 'forgot') { %>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock"></i>
+              <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6">
+              <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+        <% } %>
+        
+        <button type="submit" class="btn btn-primary btn-block">
+          <% if (mode === 'signup') { %>
+            Create Account
+          <% } else if (mode === 'forgot') { %>
+            Send Reset Link
+          <% } else { %>
+            Sign In
+          <% } %>
+        </button>
+      </form>
+      
+      <!-- Phone Form -->
+      <form id="phoneForm" class="auth-form hidden">
+        <div class="form-group">
+          <label for="phone">Phone Number (India +91)</label>
+          <div class="input-wrapper">
+            <span class="phone-prefix">+91</span>
+            <input type="tel" id="phone" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}">
+          </div>
+        </div>
+        
+        <div id="otpSection" class="hidden">
+          <div class="form-group">
+            <label for="otp">Enter OTP</label>
+            <div class="otp-inputs">
+              <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+              <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+              <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+              <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+              <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+              <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block" onclick="verifyOtp()">
+            Verify OTP
+          </button>
+        </div>
+        
+        <button type="button" id="sendOtpBtn" class="btn btn-primary btn-block" onclick="sendOtp()">
+          Send OTP
+        </button>
+      </form>
+      
+      <% if (mode === 'login') { %>
+        <div class="auth-links">
+          <a href="/auth?mode=forgot">Forgot password?</a>
+        </div>
+      <% } %>
+      
+      <div class="auth-footer">
+        <% if (mode === 'signup') { %>
+          Already have an account? <a href="/auth?mode=login">Sign in</a>
+        <% } else { %>
+          Don't have an account? <a href="/auth?mode=signup">Sign up</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  let currentPhone = '';
+  
+  function switchMethod(method) {
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.method === method);
+    });
+    document.getElementById('emailForm').classList.toggle('hidden', method !== 'email');
+    document.getElementById('phoneForm').classList.toggle('hidden', method !== 'phone');
+  }
+  
+  function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+  
+  async function sendOtp() {
+    const phone = document.getElementById('phone').value;
+    if (phone.length !== 10) {
+      alert('Please enter a valid 10-digit phone number');
+      return;
+    }
+    
+    currentPhone = '+91' + phone;
+    
+    try {
+      const res = await fetch('/auth/phone-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentPhone })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        document.getElementById('sendOtpBtn').classList.add('hidden');
+        document.getElementById('otpSection').classList.remove('hidden');
+        document.querySelector('.otp-input').focus();
+      } else {
+        alert(data.error || 'Failed to send OTP');
+      }
+    } catch (err) {
+      alert('Failed to send OTP');
+    }
+  }
+  
+  async function verifyOtp() {
+    const inputs = document.querySelectorAll('.otp-input');
+    const token = Array.from(inputs).map(i => i.value).join('');
+    
+    if (token.length !== 6) {
+      alert('Please enter the complete OTP');
+      return;
+    }
+    
+    try {
+      const res = await fetch('/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentPhone, token })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        window.location.href = '/dashboard';
+      } else {
+        alert(data.error || 'Invalid OTP');
+      }
+    } catch (err) {
+      alert('Failed to verify OTP');
+    }
+  }
+  
+  // OTP input auto-focus
+  document.querySelectorAll('.otp-input').forEach((input, index, inputs) => {
+    input.addEventListener('input', (e) => {
+      if (e.target.value && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+      }
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && index > 0) {
+        inputs[index - 1].focus();
+      }
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

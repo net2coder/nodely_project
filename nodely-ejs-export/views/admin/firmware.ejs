@@ -1,0 +1,152 @@
+<%- include('../partials/header') %>
+
+<section class="admin-section">
+  <div class="container">
+    <div class="admin-header">
+      <div>
+        <a href="/admin" class="back-link">
+          <i data-lucide="arrow-left"></i>
+          Back to Admin
+        </a>
+        <h1>Firmware Management</h1>
+        <p class="text-muted">Manage firmware versions for OTA updates</p>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <i data-lucide="plus" class="btn-icon"></i>
+        Add Firmware
+      </button>
+    </div>
+    
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Version</th>
+            <th>URL</th>
+            <th>Changelog</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (firmwares.length === 0) { %>
+            <tr>
+              <td colspan="5" class="empty-cell">
+                <div class="empty-state small">
+                  <i data-lucide="hard-drive"></i>
+                  <p>No firmware versions yet</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% firmwares.forEach(fw => { %>
+              <tr>
+                <td>
+                  <span class="badge primary">v<%= fw.version %></span>
+                </td>
+                <td>
+                  <a href="<%= fw.url %>" target="_blank" class="link">
+                    <%= fw.url.length > 40 ? fw.url.slice(0, 40) + '...' : fw.url %>
+                  </a>
+                </td>
+                <td><%= fw.changelog || '-' %></td>
+                <td><%= new Date(fw.created_at).toLocaleDateString() %></td>
+                <td>
+                  <button class="btn btn-sm btn-ghost danger" onclick="deleteFirmware('<%= fw.id %>')">
+                    <i data-lucide="trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Add Firmware Modal -->
+<div class="modal" id="addModal">
+  <div class="modal-backdrop" onclick="closeAddModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Add Firmware</h3>
+      <button class="btn btn-icon" onclick="closeAddModal()">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="version">Version</label>
+        <input type="text" id="version" placeholder="1.0.0">
+      </div>
+      <div class="form-group">
+        <label for="url">Download URL</label>
+        <input type="url" id="url" placeholder="https://example.com/firmware.bin">
+      </div>
+      <div class="form-group">
+        <label for="changelog">Changelog (optional)</label>
+        <textarea id="changelog" rows="3" placeholder="What's new in this version..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addFirmware()">Add Firmware</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openAddModal() {
+    document.getElementById('addModal').classList.add('open');
+    lucide.createIcons();
+  }
+  
+  function closeAddModal() {
+    document.getElementById('addModal').classList.remove('open');
+    document.getElementById('version').value = '';
+    document.getElementById('url').value = '';
+    document.getElementById('changelog').value = '';
+  }
+  
+  async function addFirmware() {
+    const version = document.getElementById('version').value;
+    const url = document.getElementById('url').value;
+    const changelog = document.getElementById('changelog').value;
+    
+    if (!version || !url) {
+      alert('Version and URL are required');
+      return;
+    }
+    
+    const res = await fetch('/admin/firmware/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ version, url, changelog })
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.error || 'Failed to add firmware');
+    }
+  }
+  
+  async function deleteFirmware(id) {
+    if (!confirm('Are you sure you want to delete this firmware version?')) return;
+    
+    const res = await fetch(`/admin/firmware/delete/${id}`, {
+      method: 'POST'
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.error || 'Failed to delete firmware');
+    }
+  }
+</script>
+
+<%- include('../partials/footer') %>

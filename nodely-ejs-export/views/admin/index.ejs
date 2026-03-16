@@ -1,0 +1,270 @@
+<%- include('../partials/header') %>
+
+<section class="admin-section">
+  <div class="container">
+    <div class="admin-header">
+      <div>
+        <h1>Admin Panel</h1>
+        <p class="text-muted">Manage all devices and users</p>
+      </div>
+      <a href="/admin/firmware" class="btn btn-outline">
+        <i data-lucide="hard-drive" class="btn-icon"></i>
+        Firmware
+      </a>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-grid admin">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i data-lucide="cpu"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value"><%= devices.length %></span>
+          <span class="stat-label">Total Devices</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i data-lucide="user-check"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value"><%= devices.filter(d => d.claimed).length %></span>
+          <span class="stat-label">Claimed</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i data-lucide="users"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value"><%= profiles.length %></span>
+          <span class="stat-label">Users</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="showTab('devices')">
+        <i data-lucide="cpu"></i>
+        Devices
+      </button>
+      <button class="admin-tab" onclick="showTab('users')">
+        <i data-lucide="users"></i>
+        Users
+      </button>
+    </div>
+    
+    <!-- Devices Tab -->
+    <div id="devicesTab" class="admin-content">
+      <div class="search-bar">
+        <i data-lucide="search"></i>
+        <input type="text" id="deviceSearch" placeholder="Search devices..." oninput="filterTable('devices')">
+      </div>
+      
+      <div class="table-container">
+        <table class="admin-table" id="devicesTable">
+          <thead>
+            <tr>
+              <th>Device</th>
+              <th>Owner</th>
+              <th>Status</th>
+              <th>Relay</th>
+              <th>Locked</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% devices.forEach(device => { %>
+              <% 
+                const owner = profiles.find(p => p.user_id === device.owner_id);
+                const lastSeen = device.last_seen ? new Date(device.last_seen) : null;
+                const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 60000;
+              %>
+              <tr data-search="<%= device.device_name || '' %> <%= device.device_uuid %> <%= owner?.email || '' %>">
+                <td>
+                  <div class="device-cell">
+                    <strong><%= device.device_name || `Device ${device.device_uuid.slice(0, 8)}` %></strong>
+                    <span class="text-muted"><%= device.device_uuid.slice(0, 12) %>...</span>
+                  </div>
+                </td>
+                <td>
+                  <% if (owner) { %>
+                    <%= owner.email || owner.full_name %>
+                  <% } else { %>
+                    <span class="text-muted">Unclaimed</span>
+                  <% } %>
+                </td>
+                <td>
+                  <span class="badge <%= isOnline ? 'success' : 'muted' %>">
+                    <%= isOnline ? 'Online' : 'Offline' %>
+                  </span>
+                </td>
+                <td>
+                  <label class="switch small">
+                    <input 
+                      type="checkbox" 
+                      <%= device.relay_state ? 'checked' : '' %>
+                      onchange="adminToggleRelay('<%= device.id %>', this.checked)"
+                    >
+                    <span class="slider"></span>
+                  </label>
+                </td>
+                <td>
+                  <label class="switch small">
+                    <input 
+                      type="checkbox" 
+                      <%= device.locked ? 'checked' : '' %>
+                      onchange="toggleLock('<%= device.id %>', this.checked)"
+                    >
+                    <span class="slider"></span>
+                  </label>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-ghost" onclick="openTransferModal('<%= device.id %>', '<%= device.owner_id || '' %>')">
+                    <i data-lucide="user-plus"></i>
+                  </button>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Users Tab -->
+    <div id="usersTab" class="admin-content hidden">
+      <div class="search-bar">
+        <i data-lucide="search"></i>
+        <input type="text" id="userSearch" placeholder="Search users..." oninput="filterTable('users')">
+      </div>
+      
+      <div class="table-container">
+        <table class="admin-table" id="usersTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Joined</th>
+              <th>Devices</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% profiles.forEach(profile => { %>
+              <% const userDevices = devices.filter(d => d.owner_id === profile.user_id); %>
+              <tr data-search="<%= profile.email || '' %> <%= profile.full_name || '' %>">
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">
+                      <%= (profile.full_name || profile.email || 'U').charAt(0).toUpperCase() %>
+                    </div>
+                    <div>
+                      <strong><%= profile.full_name || 'No name' %></strong>
+                      <span class="text-muted"><%= profile.email %></span>
+                    </div>
+                  </div>
+                </td>
+                <td><%= new Date(profile.created_at).toLocaleDateString() %></td>
+                <td><%= userDevices.length %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Transfer Modal -->
+<div class="modal" id="transferModal">
+  <div class="modal-backdrop" onclick="closeTransferModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Transfer Device</h3>
+      <button class="btn btn-icon" onclick="closeTransferModal()">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="transferDeviceId">
+      <div class="form-group">
+        <label for="newOwner">New Owner</label>
+        <select id="newOwner">
+          <option value="">Unclaim Device</option>
+          <% profiles.forEach(profile => { %>
+            <option value="<%= profile.user_id %>"><%= profile.email || profile.full_name %></option>
+          <% }) %>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeTransferModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="transferDevice()">Transfer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.admin-content').forEach(c => c.classList.add('hidden'));
+    
+    document.querySelector(`.admin-tab:nth-child(${tab === 'devices' ? 1 : 2})`).classList.add('active');
+    document.getElementById(`${tab}Tab`).classList.remove('hidden');
+  }
+  
+  function filterTable(type) {
+    const query = document.getElementById(`${type === 'devices' ? 'device' : 'user'}Search`).value.toLowerCase();
+    document.querySelectorAll(`#${type}Table tbody tr`).forEach(row => {
+      const text = row.dataset.search.toLowerCase();
+      row.style.display = text.includes(query) ? '' : 'none';
+    });
+  }
+  
+  async function adminToggleRelay(id, state) {
+    await fetch(`/admin/toggle-relay/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state })
+    });
+  }
+  
+  async function toggleLock(id, locked) {
+    await fetch(`/admin/toggle-lock/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ locked })
+    });
+  }
+  
+  function openTransferModal(id, currentOwner) {
+    document.getElementById('transferDeviceId').value = id;
+    document.getElementById('newOwner').value = currentOwner;
+    document.getElementById('transferModal').classList.add('open');
+    lucide.createIcons();
+  }
+  
+  function closeTransferModal() {
+    document.getElementById('transferModal').classList.remove('open');
+  }
+  
+  async function transferDevice() {
+    const id = document.getElementById('transferDeviceId').value;
+    const newOwnerId = document.getElementById('newOwner').value;
+    
+    const res = await fetch(`/admin/transfer/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ new_owner_id: newOwnerId || null })
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.error || 'Failed to transfer device');
+    }
+  }
+</script>
+
+<%- include('../partials/footer') %>

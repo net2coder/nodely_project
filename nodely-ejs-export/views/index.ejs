@@ -1,0 +1,217 @@
+<%- include('partials/header') %>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-grid"></div>
+  </div>
+  
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <i data-lucide="zap"></i>
+      <span>Next-Gen IoT Platform</span>
+    </div>
+    
+    <h1 class="hero-title">
+      Control Your
+      <span class="gradient-text">Hardware</span>
+      From Anywhere
+    </h1>
+    
+    <p class="hero-subtitle">
+      Nodely provides secure, real-time device management for ESP32 and embedded systems. 
+      Monitor, control, and update your IoT fleet with enterprise-grade reliability.
+    </p>
+    
+    <div class="hero-actions">
+      <a href="/auth?mode=signup" class="btn btn-primary btn-lg">
+        <i data-lucide="rocket" class="btn-icon"></i>
+        Start Building
+      </a>
+      <a href="#how-it-works" class="btn btn-outline btn-lg">
+        <i data-lucide="play" class="btn-icon"></i>
+        See How It Works
+      </a>
+    </div>
+    
+    <div class="hero-stats">
+      <div class="stat">
+        <i data-lucide="cpu"></i>
+        <div>
+          <span class="stat-value">10K+</span>
+          <span class="stat-label">Devices</span>
+        </div>
+      </div>
+      <div class="stat">
+        <i data-lucide="globe"></i>
+        <div>
+          <span class="stat-value">99.9%</span>
+          <span class="stat-label">Uptime</span>
+        </div>
+      </div>
+      <div class="stat">
+        <i data-lucide="shield-check"></i>
+        <div>
+          <span class="stat-value">256-bit</span>
+          <span class="stat-label">Encryption</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Everything You Need</h2>
+      <p class="section-subtitle">
+        A complete platform for managing your IoT devices with powerful features built for developers.
+      </p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="cpu"></i>
+        </div>
+        <h3>Real-Time Control</h3>
+        <p>Toggle relays, read sensors, and control your devices instantly with sub-second latency.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="shield"></i>
+        </div>
+        <h3>Enterprise Security</h3>
+        <p>End-to-end encryption, secure authentication, and device locking for complete peace of mind.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="zap"></i>
+        </div>
+        <h3>OTA Updates</h3>
+        <p>Push firmware updates to your entire fleet remotely with version control and rollback.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="activity"></i>
+        </div>
+        <h3>Health Monitoring</h3>
+        <p>Track device status, uptime, and connectivity in real-time with instant alerts.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="users"></i>
+        </div>
+        <h3>Multi-User Access</h3>
+        <p>Invite team members with role-based permissions and admin controls.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i data-lucide="code"></i>
+        </div>
+        <h3>Simple API</h3>
+        <p>RESTful API endpoints that integrate seamlessly with your ESP32 projects.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="how-it-works-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Get Started in Minutes</h2>
+      <p class="section-subtitle">
+        Three simple steps to connect and control your devices.
+      </p>
+    </div>
+    
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <div class="step-icon">
+          <i data-lucide="download"></i>
+        </div>
+        <h3>Flash Your Device</h3>
+        <p>Upload our firmware to your ESP32. It auto-registers with Nodely on first boot.</p>
+      </div>
+      
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <div class="step-icon">
+          <i data-lucide="qr-code"></i>
+        </div>
+        <h3>Scan & Claim</h3>
+        <p>Scan the QR code or enter the device UUID to claim it to your account.</p>
+      </div>
+      
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <div class="step-icon">
+          <i data-lucide="toggle-right"></i>
+        </div>
+        <h3>Control Anywhere</h3>
+        <p>Use the dashboard or API to control your device from anywhere in the world.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Security Section -->
+<section id="security" class="security-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Built for Security</h2>
+      <p class="section-subtitle">
+        Your devices and data are protected with industry-leading security measures.
+      </p>
+    </div>
+    
+    <div class="security-grid">
+      <div class="security-feature">
+        <i data-lucide="lock"></i>
+        <h4>Device Locking</h4>
+        <p>Instantly lock devices to prevent unauthorized control.</p>
+      </div>
+      <div class="security-feature">
+        <i data-lucide="key"></i>
+        <h4>Secure Auth</h4>
+        <p>Multi-factor authentication and session management.</p>
+      </div>
+      <div class="security-feature">
+        <i data-lucide="shield-check"></i>
+        <h4>RLS Policies</h4>
+        <p>Row-level security ensures data isolation between users.</p>
+      </div>
+      <div class="security-feature">
+        <i data-lucide="server"></i>
+        <h4>Encrypted Transit</h4>
+        <p>All communications are encrypted with TLS 1.3.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Ready to Connect Your Devices?</h2>
+      <p>Join thousands of developers building with Nodely.</p>
+      <a href="/auth?mode=signup" class="btn btn-primary btn-lg">
+        Get Started Free
+        <i data-lucide="arrow-right" class="btn-icon-right"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
