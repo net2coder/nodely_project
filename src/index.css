@@ -2,16 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Safe area for bottom nav on iOS */
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+/* Ensure proper rendering */
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-/* Add padding to main content when bottom nav is present */
-@media (max-width: 767px) {
-  body {
-    padding-bottom: 4rem;
-  }
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground font-sans antialiased;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');

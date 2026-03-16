@@ -27,9 +27,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!supabase); // Not loading if supabase not configured
 
   const fetchUserRole = async (userId: string) => {
+    if (!supabase) return null;
     try {
       const { data, error } = await supabase
         .from('user_roles')
@@ -49,6 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -85,11 +91,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) return { error: new Error('Supabase not configured') };
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
   };
 
   const signInWithOtp = async (email: string) => {
+    if (!supabase) return { error: new Error('Supabase not configured') };
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -100,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithPhone = async (phone: string) => {
+    if (!supabase) return { error: new Error('Supabase not configured') };
     const { error } = await supabase.auth.signInWithOtp({
       phone,
     });
@@ -107,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const verifyOtp = async (email: string, token: string) => {
+    if (!supabase) return { error: new Error('Supabase not configured') };
     const { error } = await supabase.auth.verifyOtp({
       email,
       token,
@@ -116,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const verifyPhoneOtp = async (phone: string, token: string) => {
+    if (!supabase) return { error: new Error('Supabase not configured') };
     const { error } = await supabase.auth.verifyOtp({
       phone,
       token,
@@ -125,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPassword = async (email: string) => {
+    if (!supabase) return { error: new Error('Supabase not configured') };
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth?mode=reset`,
     });
@@ -132,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
+    if (!supabase) return { error: new Error('Supabase not configured') };
     const redirectUrl = `${window.location.origin}/dashboard`;
     const { error } = await supabase.auth.signUp({
       email,
@@ -145,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUpWithPhone = async (phone: string, password: string, fullName?: string) => {
+    if (!supabase) return { error: new Error('Supabase not configured') };
     const { error } = await supabase.auth.signUp({
       phone,
       password,
@@ -157,7 +171,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut({ scope: 'local' });
+      if (supabase) {
+        await supabase.auth.signOut({ scope: 'local' });
+      }
     } catch (error) {
       console.error('Sign out error:', error);
     }

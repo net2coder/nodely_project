@@ -1,13 +1,12 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Navbar } from '@/components/layout/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
-
-const FeaturesSection = lazy(() => import('@/components/landing/FeaturesSection').then(m => ({ default: m.FeaturesSection })));
-const HowItWorksSection = lazy(() => import('@/components/landing/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })));
-const SecuritySection = lazy(() => import('@/components/landing/SecuritySection').then(m => ({ default: m.SecuritySection })));
-const Footer = lazy(() => import('@/components/landing/Footer').then(m => ({ default: m.Footer })));
+import { FeaturesSection } from '@/components/landing/FeaturesSection';
+import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { SecuritySection } from '@/components/landing/SecuritySection';
+import { Footer } from '@/components/landing/Footer';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -19,27 +18,20 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
-  // Show nothing while checking auth to prevent flash
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
+  // Don't show loading state, just render the page
   return (
-    <div className="min-h-screen bg-background">
+    <div className="w-full min-h-screen bg-background">
       <Navbar />
-      <HeroSection />
-      <Suspense fallback={null}>
+      <main>
+        <HeroSection />
         <FeaturesSection />
         <HowItWorksSection />
         <SecuritySection />
         <Footer />
-      </Suspense>
+      </main>
     </div>
   );
 };
 
 export default Index;
+
