@@ -58,9 +58,11 @@ npm run build
 ### Environment Variables
 
 ```env
-VITE_SUPABASE_URL=https://rrycgonvlguqnkalupnp.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
+
+**Note:** Add your actual credentials to `.env.local` (Git-ignored). Never commit real credentials to the repository.
 
 ---
 
